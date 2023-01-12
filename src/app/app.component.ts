@@ -1,15 +1,16 @@
 import { Component, Inject, QueryList, ViewChildren } from '@angular/core';
-import { Observable, Subject, combineLatest, combineLatestWith, count, every, filter, finalize, from, groupBy, identity, of, last, map, mergeAll, mergeMap, reduce, takeLast, tap, toArray, windowCount, zip } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { APP_BASE_HREF, Time } from '@angular/common';
+import { createInjectableType } from '@angular/compiler';
+import { UrlSerializer } from '@angular/router';
+
+import { Observable, Subject, combineLatest, combineLatestWith, count, every, filter, finalize, from, groupBy, identity, of, last, map, mergeAll, mergeMap, reduce, takeLast, tap, toArray, windowCount, zip } from 'rxjs';
 
 import { ChartConfiguration, ChartOptions, ScatterDataPoint } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import 'chartjs-adapter-moment';
-import { UrlSerializer } from '@angular/router';
-import { createInjectableType } from '@angular/compiler';
 
-import {FormControl, FormGroup, FormGroupDirective, NgForm, Validators} from '@angular/forms';
+import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '@angular/forms';
 
 // import * as sampleRequestMedium from './SampleRequestMedium.json';
 // import * as sampleRequestLarge from './SampleRequestLarge.json';
@@ -404,11 +405,11 @@ export class AppComponent {
     userName: new FormControl<string>("megaspazz", [Validators.required]),
   });
 
-  public codeforcesEnterSubmit(event: Event) {
-    console.log(event);
-    this.updateCodeforces();
-    // event.preventDefault();
-  }
+  // public codeforcesEnterSubmit(event: Event) {
+  //   console.log(event);
+  //   this.updateCodeforces();
+  //   // event.preventDefault();
+  // }
 
   public updateCodeforces() {
     const window = 60;
@@ -445,7 +446,7 @@ export class AppComponent {
       }),
     ).subscribe({
       next: resp => {
-        console.log(resp);
+        // console.log(resp);
         this.loadFromScoreEvents(resp, window, user);
       },
       error: err => {
