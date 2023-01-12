@@ -398,6 +398,18 @@ export class AppComponent {
       return;
     }
 
+    this.http.get<any>("./assets/cf-score-events/" + contestId + ".json").subscribe({
+      next: resp => {
+        console.log(resp);
+        this.loadFromScoreEvents(resp, window, user);
+      },
+      error: err => {
+        this.log(err);
+        alert("Failed to find contest: " + contestId);
+      }
+    });
+    return;
+
     this.http.get<any>("./assets/cf-standings/" + contestId + ".json").subscribe({
       next: resp => {
         const userIdx = this.getUserIndex(resp.result.rows, user);
@@ -456,10 +468,72 @@ export class AppComponent {
     });
   }
 
+  loadFromScoreEvents(scoreData: any, window: number, user: string) {
+    const userIdx = this.getUserIndexFromParties(scoreData.parties, user);
+    // this.log("userIdx = " + userIdx);
+
+    if (userIdx < 0) {
+      this.standings$ = of();
+      alert(`User not found: ${user}`);
+      return;
+    }
+
+    const timeZoneOffsetMinutes = new Date().getTimezoneOffset();
+    const timeZoneOffsetMillis = timeZoneOffsetMinutes * 60 * 1000;
+
+    let ranks: TimeRank[] = [];
+    let lineLabels: number[] = [];
+    let lineData: number[] = [];
+    for (let t = 0; t <= scoreData.contestDurationSeconds; t += window) {
+      const [rank, _] = this.getRankScoreFromEvents(scoreData, userIdx, t);
+      ranks.push(new TimeRank(t, rank));
+      lineLabels.push(t * 1000 + timeZoneOffsetMillis);
+      lineData.push(rank);
+    }
+
+    // TODO: is it more efficient to build data structures in memory and assign to binded members at the end?
+    //       or is it OK simply to use the binded members directly, if it won't trigger any updates to UI until the end of the function?
+    this.standings$ = of(ranks);
+    this.lineDatasets.labels = lineLabels;
+    this.lineDatasets.datasets[0].data = lineData;
+
+    // TODO: is there a way to manually update without calling this?
+    //       for example, see the stackblitz posted on the question:
+    //       https://stackoverflow.com/questions/63132818/creating-a-chart-using-ng2-charts-and-giving-it-the-labels-from-a-observable
+    this.lineChart?.forEach(chart => chart.update());
+  }
+
+  getRankScoreFromEvents(scoreData: any, userIdx: number, tSeconds: number): [number, Score] {
+    let scores: Score[] = Array<Score>(scoreData.parties.length);
+    for (let i = 0; i < scores.length; ++i) {
+      scores[i] = new Score(0, 0);
+    }
+    
+    for (const scoreEvent of scoreData.events) {
+      if (scoreEvent.timestampMillis <= tSeconds * 1000) {
+        let userScore = scores[scoreEvent.userIndex];
+        userScore.points += scoreEvent.score;
+        userScore.penalty += scoreEvent.penalty;
+      }
+    }
+    // console.log(scores, userIdx);
+    // console.log(scores[userIdx]);
+    return [1 + scores.filter(x => Score.compareByRankOrder(x, scores[userIdx]) < 0).length, scores[userIdx]];
+  }
+
   getUserIndex(users: any[], user: string) : number {
     for (let i = 0; i < users.length; ++i) {
       // console.log(i, users[i].party.members.map((x: any) => x.handle));
       if (users[i].party.members.map((x: any) => x.handle).includes(user)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  getUserIndexFromParties(parties: string[][], user: string) : number {
+    for (let i = 0; i < parties.length; ++i) {
+      if (parties[i].includes(user)) {
         return i;
       }
     }
@@ -551,6 +625,7 @@ class TimeRank {
   }
 }
 
+// TODO: deprecated by old rank calculation method... clean up?
 class RankScore {
   rank: number;
   score: number;
@@ -558,5 +633,25 @@ class RankScore {
   constructor(rank: number, score: number) {
     this.rank = rank;
     this.score = score;
+  }
+}
+
+class Score {
+  public points: number;
+  public penalty: number = 0;
+
+  constructor(points: number, penalty?: number) {
+    this.points = points;
+    if (typeof penalty !== "undefined") {
+      this.penalty = penalty;
+    }
+  }
+
+  static compareByRankOrder(a: Score, b: Score): number {
+    let dPoints = b.points - a.points;
+    if (dPoints !== 0) {
+      return dPoints;
+    }
+    return a.penalty - b.penalty;
   }
 }

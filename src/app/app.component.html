@@ -14,13 +14,14 @@
 <input type="button" value="Submit" (click)="updateCodeforces()" />
 
 <h1>Codeforces Line Chart</h1>
-<canvas baseChart
-  [data]="lineDatasets"
-  [legend]="lineLegend"
-  [options]="lineOptions"
-  [type]="'line'"
->
-</canvas>
+<div style="width: 100%">
+  <canvas baseChart
+    [data]="lineDatasets"
+    [legend]="lineLegend"
+    [options]="lineOptions"
+    [type]="'line'"
+  ></canvas>
+</div>
 
 <div style="display: none;"><h1>Observable</h1>
   <div id="divOutputObservable">
