@@ -1,5 +1,5 @@
 import { Component, Inject, QueryList, ViewChildren } from '@angular/core';
-import { Observable, Subject, combineLatest, combineLatestWith, count, every, filter, from, groupBy, identity, of, last, map, mergeAll, mergeMap, reduce, takeLast, tap, toArray, windowCount, zip } from 'rxjs';
+import { Observable, Subject, combineLatest, combineLatestWith, count, every, filter, finalize, from, groupBy, identity, of, last, map, mergeAll, mergeMap, reduce, takeLast, tap, toArray, windowCount, zip } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { APP_BASE_HREF, Time } from '@angular/common';
 
@@ -8,6 +8,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import 'chartjs-adapter-moment';
 import { UrlSerializer } from '@angular/router';
 import { createInjectableType } from '@angular/compiler';
+
+import {FormControl, FormGroupDirective, NgForm, Validators} from '@angular/forms';
 
 // import * as sampleRequestMedium from './SampleRequestMedium.json';
 // import * as sampleRequestLarge from './SampleRequestLarge.json';
@@ -384,6 +386,11 @@ export class AppComponent {
   public codeforcesContestID: number | string | null = 1768;
   public codeforcesUserName: string = "megaspazz";
 
+  public codeforcesContestIDFormControl = new FormControl("", [Validators.required, Validators.pattern("^[1-9][0-9]*$")]);
+  public codeforcesUserNameFormControl = new FormControl("", [Validators.required]);
+
+  public enableCodeforcesOptions: boolean = true;
+
   public updateCodeforces() {
     const window = 60;
 
@@ -397,8 +404,14 @@ export class AppComponent {
       alert("Contest ID must be a number!");
       return;
     }
-
-    this.http.get<any>("./assets/cf-score-events/" + contestId + ".json").subscribe({
+    
+    this.enableCodeforcesOptions = false;
+    this.http.get<any>("./assets/cf-score-events/" + contestId + ".json").pipe(
+      // This runs AFTER the subscribe error/complete at the bottom, which is confusing!
+      finalize(() => {
+        this.enableCodeforcesOptions = true;
+      }),
+    ).subscribe({
       next: resp => {
         console.log(resp);
         this.loadFromScoreEvents(resp, window, user);
