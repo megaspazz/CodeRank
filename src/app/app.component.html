@@ -1,19 +1,37 @@
 <h1>Codeforces Options</h1>
-<div>
+<div style="display: inline-block;">
+  <div>
+    <mat-form-field style="width: 100%;">
+      <mat-label>Codeforces Contest ID</mat-label>
+      <input matInput type="number" min="1" placeholder="e.g. 1768" [(ngModel)]="codeforcesContestID" (keydown.enter)="updateCodeforces()" />
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field style="width: 100%;">
+      <mat-label>Codeforces Handle</mat-label>
+      <input matInput type="text" placeholder="e.g. megaspazz" [(ngModel)]="codeforcesUserName" (keydown.enter)="updateCodeforces()" />
+    </mat-form-field>
+  </div>
+  <div>
+    <button mat-raised-button color="primary" style="width: 100%;" (click)="updateCodeforces()">Submit</button>
+  </div>
+</div>
+
+<!-- <div>
   <label>
     <span>Codeforces contest ID:</span>
     <input type="number" min="1" [(ngModel)]="codeforcesContestID" (keydown.enter)="updateCodeforces()" />
   </label>
-</div>
-<div>
+</div> -->
+<!-- <div>
   <label>
     <span>Codeforces handle:</span>
     <input type="text" [(ngModel)]="codeforcesUserName" (keydown.enter)="updateCodeforces()" />
   </label>
 </div>
-<input type="button" value="Submit" (click)="updateCodeforces()" />
+<input type="button" value="Submit" (click)="updateCodeforces()" /> -->
 
-<h1>Codeforces Line Chart</h1>
+<h1 style="margin-top: 24px;">Codeforces Line Chart</h1>
 <div style="width: 100%">
   <canvas baseChart
     [data]="lineDatasets"
