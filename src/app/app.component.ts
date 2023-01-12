@@ -9,7 +9,7 @@ import 'chartjs-adapter-moment';
 import { UrlSerializer } from '@angular/router';
 import { createInjectableType } from '@angular/compiler';
 
-import {FormControl, FormGroupDirective, NgForm, Validators} from '@angular/forms';
+import {FormControl, FormGroup, FormGroupDirective, NgForm, Validators} from '@angular/forms';
 
 // import * as sampleRequestMedium from './SampleRequestMedium.json';
 // import * as sampleRequestLarge from './SampleRequestLarge.json';
@@ -388,24 +388,35 @@ export class AppComponent {
 
   // public enableCodeforcesOptions: boolean = true;
 
-  public codeforcesContestIDFormControl = new FormControl<number>(1768, [Validators.required, Validators.pattern("^[1-9][0-9]*$")]);
-  public codeforcesUserNameFormControl = new FormControl<string>("megaspazz", [Validators.required]);
+  // public codeforcesContestIDFormControl = new FormControl<number>(1768, [Validators.required, Validators.pattern("^[1-9][0-9]*$")]);
+  // public codeforcesUserNameFormControl = new FormControl<string>("megaspazz", [Validators.required]);
 
   public isLoadingCodeforcesData: boolean = false;
 
   // TODO: is there a better way to keep track of all the form controls?
-  public allCodeforcesFormControls: FormControl[] = [
-    this.codeforcesContestIDFormControl,
-    this.codeforcesUserNameFormControl,
-  ];
+  // public allCodeforcesFormControls: FormControl[] = [
+  //   this.codeforcesContestIDFormControl,
+  //   this.codeforcesUserNameFormControl,
+  // ];
+
+  public codeforcesFormGroup = new FormGroup({
+    contestID: new FormControl<number>(1768, [Validators.required, Validators.pattern("^[1-9][0-9]*$")]),
+    userName: new FormControl<string>("megaspazz", [Validators.required]),
+  });
+
+  public codeforcesEnterSubmit(event: Event) {
+    console.log(event);
+    this.updateCodeforces();
+    // event.preventDefault();
+  }
 
   public updateCodeforces() {
     const window = 60;
 
     // TODO: is there a better way to validate user input?
     //       if it's already validated by FormControl, is there any point in doing it here, too?
-    const contestIdOrNull = this.codeforcesContestIDFormControl.value;
-    const userOrNull = this.codeforcesUserNameFormControl.value;
+    const contestIdOrNull = this.codeforcesFormGroup.value.contestID;
+    const userOrNull = this.codeforcesFormGroup.value.userName;
 
     // this.log(`UPDATING CODEFORCES! (${contestId}, ${user})`);
     // this.log()typeof contestId;
@@ -422,19 +433,14 @@ export class AppComponent {
 
     const contestId = contestIdOrNull!;
     const user = userOrNull!;
-    
-    // TODO: is there a better way to enable/disable everything?
-    for (const formControl of this.allCodeforcesFormControls) {
-      formControl.disable();
-    }
-    this.isLoadingCodeforcesData = true;
 
+    this.codeforcesFormGroup.disable();
+    this.isLoadingCodeforcesData = true;
     this.http.get<any>("./assets/cf-score-events/" + contestId + ".json").pipe(
       // This runs AFTER the subscribe error/complete at the bottom, which is confusing!
       finalize(() => {
-        for (const formControl of this.allCodeforcesFormControls) {
-          formControl.enable();
-        }
+        // TODO: why does re-enabling the form and then clearing out all text from one of the inputs cause the label to get messed up?
+        this.codeforcesFormGroup.enable();
         this.isLoadingCodeforcesData = false;
       }),
     ).subscribe({
@@ -611,6 +617,7 @@ export class AppComponent {
 
   public lineOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       xAxes: {
         type: 'time',

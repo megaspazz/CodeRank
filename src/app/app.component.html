@@ -1,25 +1,75 @@
-<h1>Codeforces Options</h1>
-<div style="display: inline-block;">
-  <div style="width: 240px;">
-    <mat-form-field style="width: 100%;">
-      <mat-label>Codeforces Contest ID</mat-label>
-      <input matInput type="number" min="1" placeholder="e.g. 1768" [formControl]="codeforcesContestIDFormControl" (keydown.enter)="updateCodeforces()" />
-      <mat-error>
-        Must be a <strong>positive number</strong>.
-      </mat-error>
-    </mat-form-field>
-  </div>
-  <div>
-    <mat-form-field style="width: 100%;">
-      <mat-label>Codeforces Handle</mat-label>
-      <input matInput type="text" placeholder="e.g. megaspazz" [formControl]="codeforcesUserNameFormControl" (keydown.enter)="updateCodeforces()" />
-      <mat-error *ngIf="codeforcesUserNameFormControl.hasError('required')">
-        Handle is <strong>required</strong>.
-      </mat-error>
-    </mat-form-field>
-  </div>
-  <div>
-    <button mat-raised-button color="primary" style="width: 100%;" [disabled]="isLoadingCodeforcesData || codeforcesContestIDFormControl.errors || codeforcesUserNameFormControl.errors" (click)="updateCodeforces()">Submit</button>
+<style>
+  .content-frame {
+    padding: 24px 24px 24px 24px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .flex-container {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+
+  .flex-container .stretch-to-fit {
+    flex: 0 1 auto;
+  }
+
+  .flex-container .fill-remaining {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .button-row {
+    display: flex;
+    align-items: center;
+  }
+</style>
+
+
+
+<div class="content-frame">
+  <div class="flex-container">
+    <div class="stretch-to-fit">
+      <h1>Codeforces Options</h1>
+      <div style="display: inline-block;">
+        <div style="width: 240px;">
+          <mat-form-field style="width: 100%;">
+            <mat-label>Codeforces Contest ID</mat-label>
+            <input matInput type="number" min="1" placeholder="e.g. 1768" [formControl]="codeforcesFormGroup.controls.contestID" (keydown.enter)="codeforcesFormGroup.status === 'VALID' && updateCodeforces()" />
+            <mat-error>
+              Must be a <strong>positive number</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-form-field style="width: 100%;">
+            <mat-label>Codeforces Handle</mat-label>
+            <input matInput type="text" placeholder="e.g. megaspazz" [formControl]="codeforcesFormGroup.controls.userName" (keydown.enter)="codeforcesFormGroup.status === 'VALID' && updateCodeforces()" />
+            <mat-error *ngIf="codeforcesFormGroup.controls.userName.hasError('required')">
+              Handle is <strong>required</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div>
+          <button mat-raised-button color="primary" style="width: 100%;" [disabled]="isLoadingCodeforcesData || codeforcesFormGroup.status !== 'VALID'" (click)="updateCodeforces()">Submit</button>
+        </div>
+      </div>
+      <h1 style="margin-top: 24px;">Codeforces Line Chart</h1>
+    </div>
+    <div class="fill-remaining" style="min-width: 400px; min-height: 300px;">
+      <div style="height: 100%;">
+        <canvas baseChart
+          [data]="lineDatasets"
+          [legend]="lineLegend"
+          [options]="lineOptions"
+          [type]="'line'"
+        ></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -37,15 +87,7 @@
 </div>
 <input type="button" value="Submit" (click)="updateCodeforces()" /> -->
 
-<h1 style="margin-top: 24px;">Codeforces Line Chart</h1>
-<div style="width: 100%">
-  <canvas baseChart
-    [data]="lineDatasets"
-    [legend]="lineLegend"
-    [options]="lineOptions"
-    [type]="'line'"
-  ></canvas>
-</div>
+
 
 <div style="display: none;"><h1>Observable</h1>
   <div id="divOutputObservable">
