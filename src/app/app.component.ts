@@ -611,6 +611,7 @@ export class AppComponent {
 
   public lineOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       xAxes: {
         type: 'time',
