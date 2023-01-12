@@ -3,7 +3,7 @@
   <div style="width: 240px;">
     <mat-form-field style="width: 100%;">
       <mat-label>Codeforces Contest ID</mat-label>
-      <input matInput type="number" min="1" placeholder="e.g. 1768" [disabled]="!enableCodeforcesOptions" [formControl]="codeforcesContestIDFormControl" [(ngModel)]="codeforcesContestID" (keydown.enter)="updateCodeforces()" />
+      <input matInput type="number" min="1" placeholder="e.g. 1768" [formControl]="codeforcesContestIDFormControl" (keydown.enter)="updateCodeforces()" />
       <mat-error>
         Must be a <strong>positive number</strong>.
       </mat-error>
@@ -12,14 +12,14 @@
   <div>
     <mat-form-field style="width: 100%;">
       <mat-label>Codeforces Handle</mat-label>
-      <input matInput type="text" placeholder="e.g. megaspazz" [disabled]="!enableCodeforcesOptions" [formControl]="codeforcesUserNameFormControl" [(ngModel)]="codeforcesUserName" (keydown.enter)="updateCodeforces()" />
+      <input matInput type="text" placeholder="e.g. megaspazz" [formControl]="codeforcesUserNameFormControl" (keydown.enter)="updateCodeforces()" />
       <mat-error *ngIf="codeforcesUserNameFormControl.hasError('required')">
         Handle is <strong>required</strong>.
       </mat-error>
     </mat-form-field>
   </div>
   <div>
-    <button mat-raised-button color="primary" style="width: 100%;" [disabled]="!enableCodeforcesOptions || codeforcesContestIDFormControl.errors || codeforcesUserNameFormControl.errors" (click)="updateCodeforces()">Submit</button>
+    <button mat-raised-button color="primary" style="width: 100%;" [disabled]="isLoadingCodeforcesData || codeforcesContestIDFormControl.errors || codeforcesUserNameFormControl.errors" (click)="updateCodeforces()">Submit</button>
   </div>
 </div>
 

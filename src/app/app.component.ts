@@ -383,33 +383,59 @@ export class AppComponent {
   @ViewChildren(BaseChartDirective)
   public lineChart?: QueryList<BaseChartDirective>;
 
-  public codeforcesContestID: number | string | null = 1768;
-  public codeforcesUserName: string = "megaspazz";
+  // public codeforcesContestID: number | string | null = 1768;
+  // public codeforcesUserName: string = "megaspazz";
 
-  public codeforcesContestIDFormControl = new FormControl("", [Validators.required, Validators.pattern("^[1-9][0-9]*$")]);
-  public codeforcesUserNameFormControl = new FormControl("", [Validators.required]);
+  // public enableCodeforcesOptions: boolean = true;
 
-  public enableCodeforcesOptions: boolean = true;
+  public codeforcesContestIDFormControl = new FormControl<number>(1768, [Validators.required, Validators.pattern("^[1-9][0-9]*$")]);
+  public codeforcesUserNameFormControl = new FormControl<string>("megaspazz", [Validators.required]);
+
+  public isLoadingCodeforcesData: boolean = false;
+
+  // TODO: is there a better way to keep track of all the form controls?
+  public allCodeforcesFormControls: FormControl[] = [
+    this.codeforcesContestIDFormControl,
+    this.codeforcesUserNameFormControl,
+  ];
 
   public updateCodeforces() {
     const window = 60;
 
-    const contestId = this.codeforcesContestID;
-    const user = this.codeforcesUserName;
+    // TODO: is there a better way to validate user input?
+    //       if it's already validated by FormControl, is there any point in doing it here, too?
+    const contestIdOrNull = this.codeforcesContestIDFormControl.value;
+    const userOrNull = this.codeforcesUserNameFormControl.value;
 
     // this.log(`UPDATING CODEFORCES! (${contestId}, ${user})`);
     // this.log()typeof contestId;
     
-    if (typeof contestId !== "number") {
+    if (typeof contestIdOrNull !== "number") {
       alert("Contest ID must be a number!");
       return;
     }
+
+    if (typeof userOrNull !== "string") {
+      alert("User handle must be a string");
+      return;
+    }
+
+    const contestId = contestIdOrNull!;
+    const user = userOrNull!;
     
-    this.enableCodeforcesOptions = false;
+    // TODO: is there a better way to enable/disable everything?
+    for (const formControl of this.allCodeforcesFormControls) {
+      formControl.disable();
+    }
+    this.isLoadingCodeforcesData = true;
+
     this.http.get<any>("./assets/cf-score-events/" + contestId + ".json").pipe(
       // This runs AFTER the subscribe error/complete at the bottom, which is confusing!
       finalize(() => {
-        this.enableCodeforcesOptions = true;
+        for (const formControl of this.allCodeforcesFormControls) {
+          formControl.enable();
+        }
+        this.isLoadingCodeforcesData = false;
       }),
     ).subscribe({
       next: resp => {
