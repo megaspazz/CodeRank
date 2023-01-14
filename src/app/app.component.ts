@@ -562,7 +562,7 @@ export class AppComponent {
         userScore.penalty += scoreEvent.penalty;
       }
     }
-    // console.log(scores, userIdx);
+    // console.log(tSeconds, userIdx, scores);
     // console.log(scores[userIdx]);
     return [1 + scores.filter(x => Score.compareByRankOrder(x, scores[userIdx]) < 0).length, scores[userIdx]];
   }
